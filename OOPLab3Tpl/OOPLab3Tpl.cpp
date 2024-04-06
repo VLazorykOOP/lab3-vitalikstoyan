@@ -1,45 +1,44 @@
 #include <iostream>
 #include <stdexcept>
-#include <print>
-// стоян віталій 13варіант
+
 class Vector {
 private:
-    double* elements;
-    int size;// змінна яка визначає кількість елементів у векторі
-    int state;//змінна яка використовується для визначення стану вектора
+    double* elements;  // Вказівник на масив елементів
+    int size;          // Розмір вектора
+    static int count;  // Статичне поле для підрахунку кількості створених об'єктів
 
 public:
-    // Конструктор без параметрів
-    Vector() : elements(new double[1]), size(1), state(0) {
+    // Конструктори та деструктор Vector
+    Vector() : elements(new double[1]), size(1) {
         elements[0] = 0.0;
+        count++;
     }
 
-    // Конструктор з одним параметром - розмір вектора
-    Vector(int newSize) : elements(new double[newSize]), size(newSize), state(0) {
+    Vector(int newSize) : elements(new double[newSize]), size(newSize) {
         for (int i = 0; i < size; ++i) {
             elements[i] = 0.0;
         }
+        count++;
     }
 
-    // Конструктор із двома параметрами - розмір вектора та значення ініціалізації
-    Vector(int newSize, double initValue) : elements(new double[newSize]), size(newSize), state(0) {
+    Vector(int newSize, double initValue) : elements(new double[newSize]), size(newSize) {
         for (int i = 0; i < size; ++i) {
             elements[i] = initValue;
         }
+        count++;
     }
 
-    // Конструктор копій та операцію присвоєння
-    Vector(const Vector& other) : elements(new double[other.size]), size(other.size), state(other.state) {
+    Vector(const Vector& other) : elements(new double[other.size]), size(other.size) {
         for (int i = 0; i < size; ++i) {
             elements[i] = other.elements[i];
         }
+        count++;
     }
 
     Vector& operator=(const Vector& other) {
         if (this != &other) {
             delete[] elements;
             size = other.size;
-            state = other.state;
             elements = new double[size];
             for (int i = 0; i < size; ++i) {
                 elements[i] = other.elements[i];
@@ -48,32 +47,26 @@ public:
         return *this;
     }
 
-    // Деструктор
     ~Vector() {
         delete[] elements;
-    }
-     
-    // Функція присвоює елементу масиву деяке значення
-    void setElement(int index, double value = 0.0) {
-        if (index < 0 || index >= size) {
-            state = -1; // Помилка: виходить за межі масиву
-            return;
-        }
-        elements[index] = value;
-        state = 0;
+        count--;
     }
 
-    // Функція одержує деякий елемент масиву
-    double getElement(int index)  {
+    // Методи для роботи з елементами вектора
+    void setElement(int index, double value = 0.0) {
         if (index < 0 || index >= size) {
-            state = -1; // Помилка: виходить за межі масиву
-            return 0.0; // Значення за замовчуванням
+            throw std::out_of_range("Index out of range");
         }
-        state = 0;
+        elements[index] = value;
+    }
+
+    double getElement(int index) const {
+        if (index < 0 || index >= size) {
+            throw std::out_of_range("Index out of range");
+        }
         return elements[index];
     }
 
-    // Функція друку
     void print() const {
         for (int i = 0; i < size; ++i) {
             std::cout << elements[i] << " ";
@@ -81,10 +74,10 @@ public:
         std::cout << std::endl;
     }
 
-    // Функції додавання, віднімання, множення та ділення на скаляр типу double
+    // Методи для виконання операцій над векторами
     Vector add(const Vector& other) const {
         if (size != other.size) {
-            throw std::invalid_argument("Розміри векторів не співпадають");
+            throw std::invalid_argument("Vector sizes do not match");
         }
 
         Vector result(size);
@@ -96,7 +89,7 @@ public:
 
     Vector subtract(const Vector& other) const {
         if (size != other.size) {
-            throw std::invalid_argument("Розміри векторів не співпадають");
+            throw std::invalid_argument("Vector sizes do not match");
         }
 
         Vector result(size);
@@ -116,7 +109,7 @@ public:
 
     Vector divide(double scalar) const {
         if (scalar == 0.0) {
-            throw std::invalid_argument("Ділення на нуль неможливе");
+            throw std::invalid_argument("Division by zero");
         }
 
         Vector result(size);
@@ -126,10 +119,10 @@ public:
         return result;
     }
 
-    // Функції порівняння
+    // Перевантаження операторів для порівняння векторів
     bool operator>(const Vector& other) const {
         if (size != other.size) {
-            throw std::invalid_argument("Розміри векторів не співпадають");
+            throw std::invalid_argument("Vector sizes do not match");
         }
 
         for (int i = 0; i < size; ++i) {
@@ -142,7 +135,7 @@ public:
 
     bool operator<(const Vector& other) const {
         if (size != other.size) {
-            throw std::invalid_argument("Розміри векторів не співпадають");
+            throw std::invalid_argument("Vector sizes do not match");
         }
 
         for (int i = 0; i < size; ++i) {
@@ -155,7 +148,7 @@ public:
 
     bool operator==(const Vector& other) const {
         if (size != other.size) {
-            throw std::invalid_argument("Розміри векторів не співпадають");
+            throw std::invalid_argument("Vector sizes do not match");
         }
 
         for (int i = 0; i < size; ++i) {
@@ -166,80 +159,106 @@ public:
         return true;
     }
 
-    // Підрахунок числа об'єктів даного типу
+    // Статичний метод для отримання кількості створених об'єктів
     static int getCount() {
         return count;
     }
-
-private:
-    static int count; // Статична змінна для підрахунку числа об'єктів даного типу
 };
 
+// Ініціалізація статичної змінної count
 int Vector::count = 0;
 
-// Програма тестування
 int main() {
-    // Тестування конструкторів і функцій класу
-    Vector v1; // Конструктор без параметрів
-    v1.print(); // Виводимо вектор: 0.0
+    // Створення об'єктів класу Vector з різними конструкторами
+    Vector v1;
+    v1.print();
 
-    Vector v2(5); // Конструктор з одним параметром
-    v2.print(); // Виводимо вектор: 0.0 0.0 0.0 0.0 0.0
+    Vector v2(5);
+    v2.print();
 
-    Vector v3(3, 2.5); // Конструктор із двома параметрами
-    v3.print(); // Виводимо вектор: 2.5 2.5 2.5
+    Vector v3(3, 2.5);
+    v3.print();
 
-    Vector v4 = v3; // Конструктор копій
-    v4.print(); // Виводимо вектор: 2.5 2.5 2.5
+    Vector v4 = v3;
+    v4.print();
 
-    Vector v5;
-    v5 = v2; // Операція присвоєння
-    v5.print(); // Виводимо вектор: 0.0 0.0 0.0 0.0 0.0
-
-    // Тестування функцій для роботи з елементами вектору
     v2.setElement(2, 3.7);
-    v2.print(); // Виводимо вектор: 0.0 0.0 3.7 0.0 0.0
+    v2.print();
 
     double value = v2.getElement(2);
-    std::cout << "Елемент за індексом 2: " << value << std::endl; // Виводимо: 3.7
+    std::cout << "Element at index 2: " << value << std::endl;
 
-    // Тестування арифметичних операцій
-    Vector sum = v2.add(v3);
-    sum.print(); // Виводимо вектор: 2.5 2.5 6.2 0.0 0.0
-
-    Vector diff = v2.subtract(v3);
-    diff.print(); // Виводимо вектор: -2.5 -2.5 -3.7 0.0 0.0
-
-    Vector product = v3.multiply(2.0);
-    product.print(); // Виводимо вектор: 5.0 5.0 5.0
-
-    Vector quotient = v3.divide(2.0);
-    quotient.print(); // Виводимо вектор: 1.25 1.25 1.25
-
-    // Тестування функцій порівняння
-    if (v2 > v3) {
-        std::cout << "v2 більший за v3" << std::endl;
+    // Виклик методів класу та обробка винятків за допомогою блоків try-catch
+    try {
+        Vector sum = v2.add(v3);
+        sum.print();
     }
-    else {
-        std::cout << "v2 не більший за v3" << std::endl;
+    catch (const std::invalid_argument& e) {
+        std::cout << "Error: " << e.what() << std::endl;
     }
 
-    if (v2 < v3) {
-        std::cout << "v2 менший за v3" << std::endl;
+    try {
+        Vector diff = v2.subtract(v3);
+        diff.print();
     }
-    else {
-        std::cout << "v2 не менший за v3" << std::endl;
-    }
-
-    if (v2 == v3) {
-        std::cout << "v2 рівний v3" << std::endl;
-    }
-    else {
-        std::cout << "v2 не рівний v3" << std::endl;
+    catch (const std::invalid_argument& e) {
+        std::cout << "Error: " << e.what() << std::endl;
     }
 
-    // Підрахунок числа об'єктів даного типу
-    std::cout << "Кількість об'єктів класу Vector: " << Vector::getCount() << std::endl;
+    try {
+        Vector product = v3.multiply(2.0);
+        product.print();
+    }
+    catch (const std::invalid_argument& e) {
+        std::cout << "Error: " << e.what() << std::endl;
+    }
+
+    try {
+        Vector quotient = v3.divide(2.0);
+        quotient.print();
+    }
+    catch (const std::invalid_argument& e) {
+        std::cout << "Error: " << e.what() << std::endl;
+    }
+
+    try {
+        if (v2 > v3) {
+            std::cout << "v2 is greater than v3" << std::endl;
+        }
+        else {
+            std::cout << "v2 is not greater than v3" << std::endl;
+        }
+    }
+    catch (const std::invalid_argument& e) {
+        std::cout << "Error: " << e.what() << std::endl;
+    }
+
+    try {
+        if (v2 < v3) {
+            std::cout << "v2 is less than v3" << std::endl;
+        }
+        else {
+            std::cout << "v2 is not less than v3" << std::endl;
+        }
+    }
+    catch (const std::invalid_argument& e) {
+        std::cout << "Error: " << e.what() << std::endl;
+    }
+
+    try {
+        if (v2 == v3) {
+            std::cout << "v2 is equal to v3" << std::endl;
+        }
+        else {
+            std::cout << "v2 is not equal to v3" << std::endl;
+        }
+    }
+    catch (const std::invalid_argument& e) {
+        std::cout << "Error: " << e.what() << std::endl;
+    }
+
+    // Виведення кількості створених об'єктів класу Vector
+    std::cout << "Number of Vector objects: " << Vector::getCount() << std::endl;
 
     return 0;
 }
