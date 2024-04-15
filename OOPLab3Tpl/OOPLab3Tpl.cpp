@@ -14,13 +14,14 @@ class Rectangle {
     double height; // Висота прямокутника
     double width; // Ширина прямокутника
     std::string color; // Колір прямокутника
-
+    const int k;
+    static int st;
 public:
     // Конструктор за замовчуванням, ініціалізує всі поля нульовими значеннями
-    Rectangle() : height(0), width(0), color("white") {}
+    Rectangle() : height(0), width(0), color("white"),k(1) {}
 
     // Конструктор, який приймає параметри висоти, ширини і кольору
-    Rectangle(double h, double w, const std::string& c) : height(h), width(w), color(c) {}
+    Rectangle(double h, double w, const std::string& c, int ki) : height(h), width(w), color(c), k(ki) {}
 
     // Методи для встановлення висоти, ширини та кольору з перевіркою на коректність параметрів
     void setHeight(double h) {
@@ -67,6 +68,7 @@ public:
         return 2 * (height + width);
     }
 
+int  Rectangle::st =1; 
     // Метод для виведення інформації про прямокутник
     void printInfo() const {
         std::cout << "Rectangle Info:\n";
